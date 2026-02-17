@@ -1,0 +1,14 @@
+body.dark-mode {
+  background-color: #0f172a !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .page-card {
+  background: #16213e !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .dropdown-menu {
+  background: #16213e !important;
+  color: #e2e8f0 !important;
+}

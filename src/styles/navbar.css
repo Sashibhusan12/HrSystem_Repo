@@ -1,0 +1,104 @@
+/* NAVBAR BACKGROUND */
+.premium-navbar {
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  box-shadow: 0 8px 30px rgba(102,126,234,.35);
+  padding: 12px 0;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 999;
+}
+
+/* BRAND */
+.navbar-brand-custom {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: white !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: .3s;
+}
+
+.navbar-brand-custom:hover {
+  transform: scale(1.05);
+}
+
+/* NAV LINKS */
+.nav-link-custom {
+  color: rgba(255,255,255,.9) !important;
+  padding: 8px 18px !important;
+  border-radius: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  transition: .3s;
+}
+
+.nav-link-custom:hover {
+  background: rgba(255,255,255,.18);
+  transform: translateY(-2px);
+}
+
+.nav-link-custom.active {
+  background: rgba(255,255,255,.25);
+}
+
+/* SEARCH BAR */
+.search-box {
+  position: relative;
+}
+
+.search-input {
+  border-radius: 30px !important;
+  padding: 10px 20px 10px 40px !important;
+  border: none !important;
+  width: 260px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #667eea;
+}
+
+/* ICON BUTTONS */
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.2);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: .3s;
+}
+
+.icon-btn:hover {
+  background: rgba(255,255,255,.35);
+  transform: scale(1.1);
+}
+
+/* USER AVATAR */
+.user-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: white;
+  color: #667eea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* DROPDOWN */
+.dropdown-menu {
+  border-radius: 14px !important;
+  border: none !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,.15);
+}

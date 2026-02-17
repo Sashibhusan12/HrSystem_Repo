@@ -1,19 +1,27 @@
 import React, { useState, useEffect } from "react";
+import "./styles/topNavbar.css";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
-  NavLink,
-  Outlet,
   Navigate,
+  Outlet,
+  Link,
+  useLocation,
 } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 
 import {
-  Home, Users, Calendar, TrendingUp, DollarSign,
-  ChevronDown, ChevronRight, Menu, X, Bell, Search,
-  Moon, Sun, MessageSquare,
+  Bell, Moon, Sun, Users, Calendar, DollarSign,
+  TrendingUp, BarChart2, Home, Settings, User, MessageSquare,
+  LogOut, Search
 } from "lucide-react";
+
+import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
+import Nav from "react-bootstrap/Nav";
+import Navbar from "react-bootstrap/Navbar";
+import NavDropdown from "react-bootstrap/NavDropdown";
 
 // PAGES
 import Login from "./pages/auth/Login";
@@ -34,84 +42,190 @@ const PrivateRoute = ({ children }) => {
 };
 
 //////////////////////////////////////////////////////
-// ACTIVE LINK STYLE
+// TOP NAVBAR
 //////////////////////////////////////////////////////
-const linkClass = ({ isActive }) =>
-  `flex items-center gap-3 px-4 py-3 rounded-xl transition font-medium text-base ${
-    isActive ? "bg-white/20 text-white"
-             : "text-white/80 hover:bg-white/10 hover:text-white"
-  }`;
-
-//////////////////////////////////////////////////////
-// SIDEBAR
-//////////////////////////////////////////////////////
-const Sidebar = ({ isMobileOpen, setIsMobileOpen, isSidebarOpen }) => {
-  const [employeesOpen, setEmployeesOpen] = useState(false);
-
-  return (
-    <>
-      {isMobileOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
-
-      <aside className={`fixed left-0 top-0 h-screen w-64 
-        bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700
-        shadow-2xl p-6 z-50 transition-transform duration-300
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        ${!isSidebarOpen && "lg:-translate-x-full"}`}>
-
-        <h1 className="text-2xl font-bold text-white mb-10">HR Elite</h1>
-
-        <nav className="space-y-2">
-          <NavLink to="/app" end className={linkClass}>
-            <Home size={20}/> Dashboard
-          </NavLink>
-
-          <div>
-            <button onClick={()=>setEmployeesOpen(!employeesOpen)}
-              className="w-full flex justify-between px-4 py-3 text-white/80">
-              <div className="flex gap-3"><Users/>Employees</div>
-              {employeesOpen ? <ChevronDown/> : <ChevronRight/>}
-            </button>
-
-            {employeesOpen && (
-              <div className="ml-4 space-y-1">
-                <NavLink to="/app/employees" className={linkClass}>Employees</NavLink>
-                <NavLink to="/app/attendance" className={linkClass}>Attendance</NavLink>
-                <NavLink to="/app/payroll" className={linkClass}>Payroll</NavLink>
-              </div>
-            )}
-          </div>
-
-          <NavLink to="/app/analytics" className={linkClass}>
-            <TrendingUp size={20}/> Analytics
-          </NavLink>
-        </nav>
-      </aside>
-    </>
-  );
-};
-
-//////////////////////////////////////////////////////
-// HEADER WITH LOGOUT
-//////////////////////////////////////////////////////
-const Header = ({ onMenuClick }) => {
+const TopNavbar = () => {
   const { logout } = useAuth();
+  const location = useLocation();
+  const [notifications] = useState(3);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [searchFocused, setSearchFocused] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [darkMode]);
 
   const handleLogout = () => {
     logout();
     window.location.href = "/";
   };
 
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  const isActive = (path) => location.pathname === path;
+
   return (
-    <header className="h-16 bg-white flex justify-between px-6 items-center shadow">
-      <button onClick={onMenuClick}><Menu/></button>
-      <button onClick={handleLogout} className="text-red-500 font-bold">
-        Logout
-      </button>
-    </header>
+    <>
+      
+      <Navbar expand="lg" className="premium-navbar">
+        <Container fluid className="px-4">
+          <Navbar.Brand as={Link} to="/app" className="navbar-brand-custom">
+            <BarChart2 size={28} />
+            HR Elite
+          </Navbar.Brand>
+
+          <Navbar.Toggle aria-controls="main-navbar" />
+
+          <Navbar.Collapse id="main-navbar">
+            {/* LEFT MENU */}
+            <Nav className="me-auto ms-lg-4">
+              <Nav.Link 
+                as={Link} 
+                to="/app" 
+                className={`nav-link-custom ${isActive('/app') ? 'active' : ''}`}
+              >
+                <Home size={18} />
+                Dashboard
+              </Nav.Link>
+
+              <NavDropdown
+                title={
+                  <span className="d-flex align-items-center gap-2">
+                    <Users size={18} />
+                    Employees
+                  </span>
+                }
+                id="employees-dropdown"
+              >
+                <NavDropdown.Item as={Link} to="/app/employees">
+                  <Users size={16} />
+                  Employees
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/app/attendance">
+                  <Calendar size={16} />
+                  Attendance
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/app/payroll">
+                  <DollarSign size={16} />
+                  Payroll
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/app/analytics">
+                  <TrendingUp size={16} />
+                  Analytics
+                </NavDropdown.Item>
+              </NavDropdown>
+
+              <Nav.Link 
+                as={Link} 
+                to="/app/settings" 
+                className={`nav-link-custom ${isActive('/app/settings') ? 'active' : ''}`}
+              >
+                <Settings size={18} />
+                Settings
+              </Nav.Link>
+            </Nav>
+
+            {/* RIGHT SIDE */}
+            <div className="d-flex align-items-center gap-3">
+              <div 
+                className={`search-container d-none d-lg-block ${searchFocused ? 'focused' : ''}`}
+              >
+                <Search size={18} className="search-icon" />
+                <Form.Control
+                  placeholder="Search..."
+                  className="search-input-custom"
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                />
+              </div>
+
+              {/* Dark/Light Mode Toggle */}
+              <button 
+                className="theme-toggle-btn" 
+                onClick={toggleDarkMode}
+                title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+
+              <button className="icon-btn-custom">
+                <MessageSquare size={20} />
+              </button>
+
+              <NavDropdown
+                align="end"
+                title={
+                  <button className="icon-btn-custom">
+                    <Bell size={20} />
+                    {notifications > 0 && (
+                      <span className="notification-badge">{notifications}</span>
+                    )}
+                  </button>
+                }
+                id="notifications-dropdown"
+                className="p-0"
+              >
+                <NavDropdown.Header>
+                  Notifications
+                </NavDropdown.Header>
+                <NavDropdown.Divider />
+                <NavDropdown.Item>
+                  <Bell size={16} />
+                  New employee joined
+                </NavDropdown.Item>
+                <NavDropdown.Item>
+                  <Calendar size={16} />
+                  Leave approved
+                </NavDropdown.Item>
+                <NavDropdown.Item>
+                  <DollarSign size={16} />
+                  Payroll processed
+                </NavDropdown.Item>
+              </NavDropdown>
+
+              <NavDropdown
+                align="end"
+                title={
+                  <div className="user-avatar">
+                    <User size={20} />
+                  </div>
+                }
+                id="user-dropdown"
+                className="p-0"
+              >
+                <NavDropdown.Header>
+                  My Account
+                </NavDropdown.Header>
+                <NavDropdown.Divider />
+                <NavDropdown.Item as={Link} to="/app/profile">
+                  <User size={16} />
+                  Profile
+                </NavDropdown.Item>
+                <NavDropdown.Item as={Link} to="/app/settings">
+                  <Settings size={16} />
+                  Settings
+                </NavDropdown.Item>
+                <NavDropdown.Divider />
+                <NavDropdown.Item onClick={handleLogout} className="text-danger">
+                  <LogOut size={16} />
+                  Logout
+                </NavDropdown.Item>
+              </NavDropdown>
+            </div>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+    </>
   );
 };
 
@@ -119,26 +233,16 @@ const Header = ({ onMenuClick }) => {
 // LAYOUT
 //////////////////////////////////////////////////////
 const Layout = () => {
-  const [isMobileOpen,setIsMobileOpen]=useState(false);
-  const [isSidebarOpen,setIsSidebarOpen]=useState(true);
-
   return (
     <div className="bg-slate-100 min-h-screen">
-      <Sidebar
-        isMobileOpen={isMobileOpen}
-        setIsMobileOpen={setIsMobileOpen}
-        isSidebarOpen={isSidebarOpen}
-      />
+      <TopNavbar />
 
-      <div className={`${isSidebarOpen ? "lg:ml-64":"lg:ml-0"} transition-all`}>
-        <Header onMenuClick={()=>setIsMobileOpen(!isMobileOpen)} />
-
-        <main className="p-6">
-          <div className="bg-white rounded-2xl shadow p-8 min-h-[80vh]">
-            <Outlet/>
-          </div>
-        </main>
-      </div>
+      {/* Add padding-top to prevent content from being hidden under fixed navbar */}
+      <main className="p-6" style={{ paddingTop: '100px' }}>
+        <div className="bg-white rounded-2xl shadow p-8 min-h-[80vh]">
+          <Outlet/>
+        </div>
+      </main>
     </div>
   );
 };

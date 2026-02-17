@@ -4,7 +4,7 @@ import App from "./App";
 import "./index.css";
 //import "bootstrap/dist/css/bootstrap.min.css"; // ⭐ ADD THIS
 import { AuthProvider } from "./context/AuthContext";
-
+import 'bootstrap/dist/css/bootstrap.min.css';
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <AuthProvider>
