@@ -33,13 +33,20 @@ const Login = () => {
 
   const handlePasswordLogin = async (e) => {
     e.preventDefault();
+
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    const success = login(email, password);
+
+    const success = await login(email, password); // ⭐ await is required
+
     setLoading(false);
-    if (success) navigate("/app");
-    else triggerShake();
+
+    if (success) {
+      navigate("/app");
+    } else {
+      triggerShake(); // your animation
+    }
   };
+
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -568,9 +575,9 @@ const Login = () => {
           <div className="hr-logo">
             <div className="hr-logo-box">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#1a1a2e" strokeWidth="2" strokeLinecap="round"/>
-                <circle cx="9" cy="7" r="4" stroke="#1a1a2e" strokeWidth="2"/>
-                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#1a1a2e" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#1a1a2e" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="9" cy="7" r="4" stroke="#1a1a2e" strokeWidth="2" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#1a1a2e" strokeWidth="2" strokeLinecap="round" />
               </svg>
             </div>
             <span className="hr-logo-text">PeopleCore <sub>HR Suite</sub></span>
@@ -659,9 +666,9 @@ const Login = () => {
                       tabIndex={-1}
                     >
                       {showPass ? (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
                       ) : (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                       )}
                     </button>
                   </div>
@@ -677,9 +684,9 @@ const Login = () => {
                   </div>
                 </button>
 
-                <div className="demo-area">
+                {/* <div className="demo-area">
                   Demo: <span>admin@gmail.com</span> / <span>123456</span>
-                </div>
+                </div> */}
               </form>
             )}
 
@@ -712,7 +719,7 @@ const Login = () => {
                       <button
                         type="button"
                         className="send-otp-btn"
-                        onClick={() => { setOtpSent(false); setOtp(["","","","","",""]); }}
+                        onClick={() => { setOtpSent(false); setOtp(["", "", "", "", "", ""]); }}
                       >
                         Change
                       </button>
@@ -748,7 +755,7 @@ const Login = () => {
                         <>Didn't receive it?{" "}
                           <button
                             type="button"
-                            onClick={() => { setCountdown(30); setOtp(["","","","","",""]); }}
+                            onClick={() => { setCountdown(30); setOtp(["", "", "", "", "", ""]); }}
                           >
                             Resend OTP
                           </button>
