@@ -19,21 +19,21 @@ import {
 } from "lucide-react";
 
 import Container from "react-bootstrap/Container";
-import Form    from "react-bootstrap/Form";
-import Nav     from "react-bootstrap/Nav";
-import Navbar  from "react-bootstrap/Navbar";
+import Form from "react-bootstrap/Form";
+import Nav from "react-bootstrap/Nav";
+import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 
 // ─── PAGE IMPORTS ──────────────────────────────────
-import Login       from "./pages/auth/Login";
-import Dashboard   from "./pages/hr/Dashboard";
-import Profile     from "./pages/superadmin/Profile";
+import Login from "./pages/auth/Login";
+import Dashboard from "./pages/hr/Dashboard";
+import Profile from "./pages/superadmin/Profile";
 import SettingsPage from "./pages/superadmin/SettingsPage";
-import Employees   from "./pages/hr/Employees";
-import Attendance  from "./pages/hr/Attendance";
-import Payroll     from "./pages/hr/Payroll";
-import Analytics   from "./pages/hr/Analytics";
-
+import Employees from "./pages/hr/Employees";
+import Attendance from "./pages/hr/Attendance";
+import Payroll from "./pages/hr/Payroll";
+import Analytics from "./pages/hr/Analytics";
+import ResetPassword from "./pages/auth/ResetPassword";
 // ═══════════════════════════════════════════════════
 // 🔐 PRIVATE ROUTE
 // ═══════════════════════════════════════════════════
@@ -49,11 +49,11 @@ const TopNavbar = () => {
   const { logout, user } = useAuth();
   const location = useLocation();
 
-  const [notifications]  = useState(3);
-  const [searchFocused,  setSearchFocused]  = useState(false);
-  const [searchValue,    setSearchValue]    = useState("");
-  const [scrolled,       setScrolled]       = useState(false);
-  const [lightMode,      setLightMode]      = useState(() => {
+  const [notifications] = useState(3);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [scrolled, setScrolled] = useState(false);
+  const [lightMode, setLightMode] = useState(() => {
     return localStorage.getItem("lightMode") === "true";
   });
 
@@ -75,9 +75,9 @@ const TopNavbar = () => {
   }, [lightMode]);
 
   // ── helpers ──────────────────────────────────────
-  const handleLogout   = () => { logout(); window.location.href = "/"; };
-  const isActive       = (path) => location.pathname === path;
-  const userInitials   = user?.name
+  const handleLogout = () => { logout(); window.location.href = "/"; };
+  const isActive = (path) => location.pathname === path;
+  const userInitials = user?.name
     ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
     : "HR";
 
@@ -193,7 +193,7 @@ const TopNavbar = () => {
             >
               {lightMode
                 ? <Moon size={17} strokeWidth={2} />
-                : <Sun  size={17} strokeWidth={2} />
+                : <Sun size={17} strokeWidth={2} />
               }
             </button>
 
@@ -320,7 +320,7 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="/app"
           element={
@@ -329,11 +329,11 @@ export default function App() {
             </PrivateRoute>
           }
         >
-          <Route index           element={<Dashboard />} />
-          <Route path="profile"  element={<Profile />} />
+          <Route index element={<Dashboard />} />
+          <Route path="profile" element={<Profile />} />
           <Route path="employees" element={<Employees />} />
           <Route path="attendance" element={<Attendance />} />
-          <Route path="payroll"  element={<Payroll />} />
+          <Route path="payroll" element={<Payroll />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
