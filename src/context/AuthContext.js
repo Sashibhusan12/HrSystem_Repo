@@ -16,13 +16,26 @@ export const AuthProvider = ({ children }) => {
   // ── Shared session helper ──────────────────────────────────────────────────
   const saveSession = (data, emailFallback) => {
     localStorage.setItem("token", data.token);
-    localStorage.setItem("tenantId", data.tenantId);
+
+    // ✅ Only store tenantId if exists
+    if (data.tenantId) {
+      localStorage.setItem("tenantId", data.tenantId);
+    } else {
+      localStorage.removeItem("tenantId"); // SuperAdmin case
+    }
+
     localStorage.setItem("role", data.role);
-    const userData = { email: data.email ?? emailFallback, role: data.role };
+
+    const userData = {
+      email: data.email ?? emailFallback,
+      role: data.role,
+      username: data.username,
+      userId: data.userId
+    };
+
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   };
-
   const clearSession = () => {
     setUser(null);
     ["user", "token", "tenantId", "role"].forEach((k) => localStorage.removeItem(k));
