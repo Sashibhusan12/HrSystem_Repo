@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./styles/topNavbar.css";
 import "./styles/sidebar.css";
+import { ToastContainer } from "react-toastify";
 import {
   BrowserRouter as Router,
   Routes,
@@ -10,8 +11,7 @@ import {
   Link,
   useLocation,
 } from "react-router-dom";
-import { useAuth } from "./context/AuthContext";
-import { useMenus } from "./hooks/useMenus";
+import { AuthProvider, useAuth, useMenus } from "./context/AuthContext"; // ✅ FIXED: useMenus from AuthContext
 
 import {
   Bell, Moon, Sun, BarChart2,
@@ -25,19 +25,18 @@ import {
   ChevronRight, Menu, X, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 
-import Container   from "react-bootstrap/Container";
-import Nav         from "react-bootstrap/Nav";
+import Nav from "react-bootstrap/Nav";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import Form        from "react-bootstrap/Form";
 
-import Login         from "./pages/auth/Login";
-import Dashboard     from "./pages/hr/Dashboard";
-import Profile       from "./pages/superadmin/Profile";
-import SettingsPage  from "./pages/superadmin/SettingsPage";
-import Employees     from "./pages/hr/Employees";
-import Attendance    from "./pages/hr/Attendance";
-import Payroll       from "./pages/hr/Payroll";
-import Analytics     from "./pages/hr/Analytics";
+import Login from "./pages/auth/Login";
+import Dashboard from "./pages/hr/Dashboard";
+import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
+import Profile from "./pages/superadmin/Profile";
+import SettingsPage from "./pages/superadmin/SettingsPage";
+import Employees from "./pages/hr/Employees";
+import Attendance from "./pages/hr/Attendance";
+import Payroll from "./pages/hr/Payroll";
+import Analytics from "./pages/hr/Analytics";
 import ResetPassword from "./pages/auth/ResetPassword";
 
 // ═══════════════════════════════════════════════════
@@ -72,32 +71,42 @@ const PrivateRoute = ({ children }) => {
   return user ? children : <Navigate to="/" />;
 };
 
+const RoleBasedRedirect = () => {
+  const { user } = useAuth();
+  switch (user?.role) {
+    case "1": return <Navigate to="/app/superadmin/dashboard" replace />;
+    case "2": return <Navigate to="/app/dashboard" replace />;
+    case "3": return <Navigate to="/app/employees" replace />;
+    case "4": return <Navigate to="/app/attendance" replace />;
+    case "5": return <Navigate to="/app/analytics" replace />;
+    default: return <Navigate to="/app/employees" replace />;
+  }
+};
+
 // ═══════════════════════════════════════════════════
 // SIDEBAR NAV ITEM
 // ═══════════════════════════════════════════════════
 const SidebarNavItem = ({ menu, isActive, collapsed }) => {
-  const [open, setOpen]       = useState(false);
-  const [flyout, setFlyout]   = useState(false);
+  const [open, setOpen] = useState(false);
+  const [flyout, setFlyout] = useState(false);
   const [flyoutY, setFlyoutY] = useState(0);
-  const itemRef               = useRef(null);
-  const flyoutRef             = useRef(null);
+  const itemRef = useRef(null);
+  const flyoutRef = useRef(null);
   const hasChildren = menu.children && menu.children.length > 0;
   const active = isActive(menu.path);
 
-  // Close flyout on outside click
   useEffect(() => {
     if (!flyout) return;
     const handler = (e) => {
       if (
         flyoutRef.current && !flyoutRef.current.contains(e.target) &&
-        itemRef.current  && !itemRef.current.contains(e.target)
+        itemRef.current && !itemRef.current.contains(e.target)
       ) setFlyout(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [flyout]);
 
-  // Close flyout when sidebar expands
   useEffect(() => { if (!collapsed) setFlyout(false); }, [collapsed]);
 
   const handleCollapsedClick = (e) => {
@@ -128,7 +137,6 @@ const SidebarNavItem = ({ menu, isActive, collapsed }) => {
           {collapsed && <ChevronRight size={10} className="collapsed-hint" />}
         </button>
 
-        {/* Expanded inline sub-menu */}
         {!collapsed && open && (
           <div className="sidebar-sub">
             {menu.children.map((child) => (
@@ -145,7 +153,6 @@ const SidebarNavItem = ({ menu, isActive, collapsed }) => {
           </div>
         )}
 
-        {/* Collapsed flyout popout */}
         {collapsed && flyout && (
           <div ref={flyoutRef} className="sidebar-flyout" style={{ top: flyoutY }}>
             <div className="sidebar-flyout-title">{menu.menuName}</div>
@@ -197,15 +204,11 @@ const Sidebar = ({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) => {
 
   return (
     <>
-      {/* Mobile overlay */}
       <div
         className={`sidebar-overlay ${mobileOpen ? "visible" : ""}`}
         onClick={() => setMobileOpen(false)}
       />
-
       <aside className={`sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
-
-        {/* ── Sidebar Header ── */}
         <div className="sidebar-header">
           <Link to="/app" className="sidebar-brand">
             <div className="sidebar-brand-icon">
@@ -218,7 +221,6 @@ const Sidebar = ({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) => {
               </div>
             )}
           </Link>
-
           <button
             className="sidebar-collapse-btn"
             onClick={() => setCollapsed((c) => !c)}
@@ -228,15 +230,10 @@ const Sidebar = ({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) => {
           </button>
         </div>
 
-        {/* ── Gold rule ── */}
         <div className="sidebar-rule" />
 
-        {/* ── Nav Menu ── */}
         <nav className="sidebar-nav">
-          {!collapsed && (
-            <span className="sidebar-section-label">Main Menu</span>
-          )}
-
+          {!collapsed && <span className="sidebar-section-label">Main Menu</span>}
           {loading ? (
             <div className="sidebar-skeleton">
               {[1, 2, 3, 4].map((i) => (
@@ -255,20 +252,27 @@ const Sidebar = ({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) => {
           )}
         </nav>
 
-        {/* ── Sidebar Footer ── */}
         <div className="sidebar-footer">
           <div className="sidebar-rule" />
           <Link to="/app/settings" className="sidebar-item" title={collapsed ? "Settings" : undefined}>
             <span className="sidebar-item-icon"><Settings size={18} strokeWidth={1.8} /></span>
             {!collapsed && <span className="sidebar-item-label">Settings</span>}
           </Link>
-
           <div className={`sidebar-user ${collapsed ? "collapsed" : ""}`}>
             <div className="sidebar-user-avatar">{userInitials}</div>
             {!collapsed && (
               <div className="sidebar-user-info">
-                <span className="sidebar-user-name">{user?.name || "Administrator"}</span>
-                <span className="sidebar-user-role">Super Admin</span>
+                <span className="sidebar-user-name">
+                  {user?.name || user?.username || "Administrator"}
+                </span>
+                <span className="sidebar-user-role">
+                  {user?.role === "1" ? "Super Admin"
+                    : user?.role === "2" ? "Admin"
+                      : user?.role === "3" ? "HR"
+                        : user?.role === "4" ? "Employee"
+                          : user?.role === "5" ? "Manager"
+                            : "User"}
+                </span>
               </div>
             )}
             {!collapsed && (
@@ -288,15 +292,15 @@ const Sidebar = ({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) => {
 };
 
 // ═══════════════════════════════════════════════════
-// TOP NAVBAR — utility bar only (no menu items)
+// TOP NAVBAR
 // ═══════════════════════════════════════════════════
 const TopNavbar = ({ onMobileMenuToggle }) => {
   const { user } = useAuth();
   const [notifications] = useState(3);
   const [searchFocused, setSearchFocused] = useState(false);
-  const [searchValue,   setSearchValue]   = useState("");
-  const [scrolled,      setScrolled]      = useState(false);
-  const [lightMode,     setLightMode]     = useState(
+  const [searchValue, setSearchValue] = useState("");
+  const [scrolled, setScrolled] = useState(false);
+  const [lightMode, setLightMode] = useState(
     () => localStorage.getItem("lightMode") === "true"
   );
 
@@ -317,12 +321,10 @@ const TopNavbar = ({ onMobileMenuToggle }) => {
 
   return (
     <header className={`top-navbar ${scrolled ? "scrolled" : ""}`}>
-      {/* Mobile hamburger */}
       <button className="mobile-menu-btn" onClick={onMobileMenuToggle}>
         <Menu size={20} strokeWidth={2} />
       </button>
 
-      {/* Search */}
       <div className={`topbar-search ${searchFocused ? "focused" : ""}`}>
         <Search size={15} className="topbar-search-icon" />
         <input
@@ -337,25 +339,17 @@ const TopNavbar = ({ onMobileMenuToggle }) => {
 
       <div className="topbar-spacer" />
 
-      {/* Right utilities */}
       <div className="topbar-actions">
-
-        {/* Theme toggle */}
         <button className="topbar-icon-btn" onClick={() => setLightMode((m) => !m)} title={lightMode ? "Dark mode" : "Light mode"}>
           {lightMode ? <Moon size={17} strokeWidth={2} /> : <Sun size={17} strokeWidth={2} />}
         </button>
-
-        {/* Activity */}
         <button className="topbar-icon-btn" title="Activity">
           <Activity size={17} strokeWidth={2} />
         </button>
-
-        {/* Messages */}
         <button className="topbar-icon-btn" title="Messages">
           <MessageSquare size={17} strokeWidth={2} />
         </button>
 
-        {/* Notifications */}
         <NavDropdown
           align="end"
           title={
@@ -369,52 +363,48 @@ const TopNavbar = ({ onMobileMenuToggle }) => {
         >
           <NavDropdown.Header>Notifications</NavDropdown.Header>
           <NavDropdown.Divider />
-          <NavDropdown.Item>
-            <Zap size={14} style={{ color: "var(--gold-primary)" }} /> New employee joined
-          </NavDropdown.Item>
-          <NavDropdown.Item>
-            <Calendar size={14} style={{ color: "var(--accent-teal)" }} /> Leave request approved
-          </NavDropdown.Item>
-          <NavDropdown.Item>
-            <DollarSign size={14} style={{ color: "#6ee7b7" }} /> Q4 payroll processed
-          </NavDropdown.Item>
+          <NavDropdown.Item><Zap size={14} style={{ color: "var(--gold-primary)" }} /> New employee joined</NavDropdown.Item>
+          <NavDropdown.Item><Calendar size={14} style={{ color: "var(--accent-teal)" }} /> Leave request approved</NavDropdown.Item>
+          <NavDropdown.Item><DollarSign size={14} style={{ color: "#6ee7b7" }} /> Q4 payroll processed</NavDropdown.Item>
           <NavDropdown.Divider />
-          <NavDropdown.Item className="text-center" style={{ fontSize: "0.78rem", fontFamily: "'Syne',sans-serif", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-            View All
-          </NavDropdown.Item>
+          <NavDropdown.Item className="text-center" style={{ fontSize: "0.78rem" }}>View All</NavDropdown.Item>
         </NavDropdown>
 
-        {/* Separator */}
         <span className="topbar-sep" />
 
-        {/* User menu */}
         <NavDropdown
           align="end"
           title={<div className="topbar-avatar">{userInitials}</div>}
           id="user-dropdown"
           className="topbar-dropdown"
         >
-          <NavDropdown.Header>{user?.name || "Administrator"}</NavDropdown.Header>
+          <NavDropdown.Header>
+            <div>{user?.name || user?.username || "Administrator"}</div>
+            <small style={{ color: "gray", fontWeight: "normal" }}>
+              {user?.role === "1" ? "Super Admin"
+                : user?.role === "2" ? "Admin"
+                  : user?.role === "3" ? "HR"
+                    : user?.role === "4" ? "Employee"
+                      : user?.role === "5" ? "Manager"
+                        : "User"}
+            </small>
+          </NavDropdown.Header>
           <NavDropdown.Divider />
           <NavDropdown.Item as={Link} to="/app/profile"><User size={14} /> Profile</NavDropdown.Item>
           <NavDropdown.Item as={Link} to="/app/settings"><Settings size={14} /> Settings</NavDropdown.Item>
           <NavDropdown.Item><Shield size={14} /> Security</NavDropdown.Item>
           <NavDropdown.Divider />
-          <NavDropdown.Item
-            className="text-danger"
-            onClick={() => { window.location.href = "/"; }}
-          >
+          <NavDropdown.Item className="text-danger" onClick={() => { window.location.href = "/"; }}>
             <LogOut size={14} /> Sign out
           </NavDropdown.Item>
         </NavDropdown>
-
       </div>
     </header>
   );
 };
 
 // ═══════════════════════════════════════════════════
-// LAYOUT — sidebar + topbar + content
+// LAYOUT
 // ═══════════════════════════════════════════════════
 const Layout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -428,7 +418,6 @@ const Layout = () => {
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
       />
-
       <div className="app-body">
         <TopNavbar onMobileMenuToggle={() => setMobileOpen((o) => !o)} />
         <main className="app-main">
@@ -442,24 +431,28 @@ const Layout = () => {
 };
 
 // ═══════════════════════════════════════════════════
-// ROUTER
+// APP — ✅ AuthProvider wraps everything
 // ═══════════════════════════════════════════════════
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/"               element={<Login />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
-          <Route index             element={<Dashboard />} />
-          <Route path="profile"    element={<Profile />} />
-          <Route path="employees"  element={<Employees />} />
-          <Route path="attendance" element={<Attendance />} />
-          <Route path="payroll"    element={<Payroll />} />
-          <Route path="analytics"  element={<Analytics />} />
-          <Route path="settings"   element={<SettingsPage />} />
-        </Route>
-      </Routes>
-    </Router>
+    <AuthProvider>  {/* ✅ THIS WAS MISSING */}
+      <ToastContainer position="top-right" autoClose={3000} />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
+            <Route index element={<RoleBasedRedirect />} />
+            <Route path="superadmin/dashboard" element={<SuperAdminDashboard />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="employees" element={<Employees />} />
+            <Route path="attendance" element={<Attendance />} />
+            <Route path="payroll" element={<Payroll />} />
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }

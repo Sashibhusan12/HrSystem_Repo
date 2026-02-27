@@ -6,3 +6,11 @@
 body {
   font-family: Inter, sans-serif;
 }
+.to-purple-600 {
+    --tw-gradient-to: #d2b159 var(--tw-gradient-to-position);
+}
+
+.from-indigo-600 {
+    --tw-gradient-from: #282648 var(--tw-gradient-from-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}

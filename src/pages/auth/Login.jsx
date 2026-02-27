@@ -53,13 +53,16 @@ const Login = () => {
     const result = await login(email, password);
     setLoading(false);
     if (result.success) {
-      navigate("/app");
+      if (result.role === "1") {          // "1" = SuperAdmin
+        navigate("/app/superadmin/dashboard");
+      } else {
+        navigate("/app/employees");       // other roles
+      }
     } else {
       setErrorMsg(result.message);
       triggerShake();
     }
   };
-
   // ── SEND OTP ──────────────────────────────────────────────────────────────
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -88,7 +91,11 @@ const Login = () => {
     const result = await verifyOtp(email, code);
     setLoading(false);
     if (result.success) {
-      navigate("/app");
+      if (result.role === "1") {          // "1" = SuperAdmin
+        navigate("/app/superadmin/dashboard");
+      } else {
+        navigate("/app/employees");
+      }
     } else {
       setErrorMsg(result.message);
       triggerShake();
@@ -159,7 +166,7 @@ const Login = () => {
 
   return (
     <>
-     
+
 
       <div className="hr-root">
 
@@ -205,7 +212,7 @@ const Login = () => {
 
                 {errorMsg && (
                   <div className="error-banner">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                     {errorMsg}
                   </div>
                 )}
@@ -228,8 +235,8 @@ const Login = () => {
                           onFocus={() => setFocused("password")} onBlur={() => setFocused(null)} required />
                         <button type="button" className="eye-btn" onClick={() => setShowPass(v => !v)} tabIndex={-1}>
                           {showPass
-                            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+                            : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                           }
                         </button>
                       </div>
@@ -259,7 +266,7 @@ const Login = () => {
                           required disabled={otpSent} />
                         {!otpSent
                           ? <button type="submit" className="send-otp-btn" disabled={otpLoading || !email}>{otpLoading ? "Sending…" : "Send OTP"}</button>
-                          : <button type="button" className="send-otp-btn" onClick={() => { setOtpSent(false); setOtp(["","","","","",""]); setErrorMsg(""); }}>Change</button>
+                          : <button type="button" className="send-otp-btn" onClick={() => { setOtpSent(false); setOtp(["", "", "", "", "", ""]); setErrorMsg(""); }}>Change</button>
                         }
                       </div>
                     </div>
@@ -314,7 +321,7 @@ const Login = () => {
                 <div className="magic-hint">
                   <span className="magic-hint-icon">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b08d30" strokeWidth="2" strokeLinecap="round">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" />
                     </svg>
                   </span>
                   <p>We'll email you a <strong>one-time reset link</strong>. It expires in <strong>15 minutes</strong> and works only once.</p>
@@ -322,7 +329,7 @@ const Login = () => {
 
                 {errorMsg && (
                   <div className="error-banner">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
                     {errorMsg}
                   </div>
                 )}
@@ -340,9 +347,9 @@ const Login = () => {
                       {resetLoading
                         ? <><div className="spinner" /> Sending link…</>
                         : <>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                            Send Reset Link
-                          </>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+                          Send Reset Link
+                        </>
                       }
                     </div>
                   </button>
@@ -356,8 +363,8 @@ const Login = () => {
                 <div className="sent-card">
                   <div className="sent-icon-wrap">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                      <polyline points="22,6 12,13 2,6"/>
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
                     </svg>
                   </div>
                   <h3>Check your inbox</h3>
