@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 
 const API_BASE_URL = "https://localhost:7271/api";
@@ -12,6 +12,28 @@ export const AuthProvider = ({ children }) => {
       ? JSON.parse(localStorage.getItem("user"))
       : null
   );
+
+  const logoutRef = useRef(null);
+
+  const clearSession = () => {
+    setUser(null);
+    ["user", "token", "tenantId", "role"].forEach((k) => localStorage.removeItem(k));
+  };
+
+  // ── AXIOS INTERCEPTOR (auto-logout on 401/403) ─────────────────────────────
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        const status = error.response?.status;
+        if (status === 401 || status === 403) {
+          if (logoutRef.current) logoutRef.current();
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => axios.interceptors.response.eject(interceptor);
+  }, []);
 
   const saveSession = (data, emailFallback) => {
     localStorage.setItem("token", data.token);
@@ -32,10 +54,15 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
   };
 
-  const clearSession = () => {
-    setUser(null);
-    ["user", "token", "tenantId", "role"].forEach((k) => localStorage.removeItem(k));
+  const logout = () => {
+    clearSession();
+    window.location.href = "/login"; // redirect to login page
   };
+
+  // Keep ref in sync so the interceptor always calls the latest logout
+  useEffect(() => {
+    logoutRef.current = logout;
+  }, [logout]);
 
   const login = async (email, password) => {
     try {
@@ -99,14 +126,13 @@ export const AuthProvider = ({ children }) => {
       return { success: false, message: err.response?.data?.message ?? "Failed to fetch user." };
     }
   };
+
   const uploadProfilePicture = async (file, userId) => {
     try {
       const token = localStorage.getItem("token");
-
       const formData = new FormData();
       formData.append("file", file);
       formData.append("userId", userId);
-
       const { data } = await axios.post(
         `${API_BASE_URL}/LoginResistarion/upload-profile-picture`,
         formData,
@@ -117,20 +143,42 @@ export const AuthProvider = ({ children }) => {
           },
         }
       );
-
       return { success: true, data };
     } catch (err) {
-      return {
-        success: false,
-        message:
-          err.response?.data?.message ?? "Failed to upload image.",
-      };
+      return { success: false, message: err.response?.data?.message ?? "Failed to upload image." };
     }
   };
-  const logout = () => clearSession();
+
+  const updateProfile = async (userId, profileData) => {
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.put(
+        `${API_BASE_URL}/LoginResistarion/updateuser/${userId}`,
+        profileData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message ?? "Failed to update profile." };
+    }
+  };
+
+  const changePassword = async (userId, currentPassword, newPassword) => {
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.put(
+        `${API_BASE_URL}/LoginResistarion/change-password`,
+        { userId, currentPassword, newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return { success: true, message: data?.message };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message ?? "Failed to change password." };
+    }
+  };
 
   return (
-    <ApiService.Provider value={{ user, login, logout, sendOtp, verifyOtp, sendResetLink, getUserById, uploadProfilePicture    }}>
+    <ApiService.Provider value={{ user, login, logout, sendOtp, verifyOtp, sendResetLink, getUserById, uploadProfilePicture, updateProfile, changePassword }}>
       {children}
     </ApiService.Provider>
   );
@@ -156,6 +204,14 @@ export const useMenus = () => {
         const res = await fetch(`${API_BASE_URL}/Menu/get-menus`, {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         });
+
+        // ── Auto-logout if token is invalid/expired ──────────────────────────
+        if (res.status === 401 || res.status === 403) {
+          ["user", "token", "tenantId", "role"].forEach((k) => localStorage.removeItem(k));
+          window.location.href = "/";
+          return;
+        }
+
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const flat = await res.json();
         const map = {};

@@ -392,7 +392,7 @@ const TopNavbar = ({ onMobileMenuToggle }) => {
           <NavDropdown.Divider />
           <NavDropdown.Item as={Link} to="/app/profile"><User size={14} /> Profile</NavDropdown.Item>
           <NavDropdown.Item as={Link} to="/app/settings"><Settings size={14} /> Settings</NavDropdown.Item>
-          <NavDropdown.Item><Shield size={14} /> Security</NavDropdown.Item>
+          {/* <NavDropdown.Item><Shield size={14} /> Security</NavDropdown.Item> */}
           <NavDropdown.Divider />
           <NavDropdown.Item className="text-danger" onClick={() => { window.location.href = "/"; }}>
             <LogOut size={14} /> Sign out

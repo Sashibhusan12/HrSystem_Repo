@@ -1,37 +1,61 @@
 import React, { useState } from "react";
-import { Bell, Lock, Globe, Moon, Sun, Shield, Eye, EyeOff } from "lucide-react";
-
-const SettingToggle = ({ title, description, enabled, onChange }) => (
-  <div className="flex items-center justify-between py-4 border-b border-slate-200 last:border-0">
-    <div className="flex-1">
-      <h4 className="font-semibold text-slate-900">{title}</h4>
-      <p className="text-sm text-slate-600 mt-1">{description}</p>
-    </div>
-    <button
-      onClick={() => onChange(!enabled)}
-      className={`relative w-14 h-8 rounded-full transition ${
-        enabled ? 'bg-gradient-to-r from-indigo-600 to-purple-600' : 'bg-slate-300'
-      }`}
-    >
-      <span
-        className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition transform ${
-          enabled ? 'translate-x-6' : 'translate-x-0'
-        }`}
-      />
-    </button>
-  </div>
-);
+import { Eye, EyeOff, Check, Key } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
 
 export default function SettingsPage() {
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: false,
-    sms: true,
+  const { user, changePassword } = useAuth();
+
+  const [showCurrent, setShowCurrent]   = useState(false);
+  const [showNew, setShowNew]           = useState(false);
+  const [showConfirm, setShowConfirm]   = useState(false);
+  const [saving, setSaving]             = useState(false);
+  const [saved, setSaved]               = useState(false);
+
+  const [passwords, setPasswords] = useState({
+    current: "", newPass: "", confirm: ""
   });
 
-  const [darkMode, setDarkMode] = useState(false);
-  const [twoFactor, setTwoFactor] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const strength = () => {
+    const p = passwords.newPass;
+    if (!p) return 0;
+    let s = 0;
+    if (p.length >= 8) s++;
+    if (/[A-Z]/.test(p)) s++;
+    if (/[0-9]/.test(p)) s++;
+    if (/[^A-Za-z0-9]/.test(p)) s++;
+    return s;
+  };
+
+  const strengthLabel = ["", "Weak", "Fair", "Good", "Strong"];
+  const strengthColor = ["", "bg-red-400", "bg-yellow-400", "bg-blue-400", "bg-emerald-400"];
+  const strengthText  = ["", "text-red-500", "text-yellow-500", "text-blue-500", "text-emerald-500"];
+
+  const handleSave = async () => {
+    if (!passwords.current || !passwords.newPass || !passwords.confirm) return;
+    if (passwords.newPass !== passwords.confirm) return;
+
+    setSaving(true);
+
+    const res = await changePassword(
+      user?.userId,
+      passwords.current,
+      passwords.newPass
+    );
+
+    if (res.success) {
+      setSaved(true);
+      setPasswords({ current: "", newPass: "", confirm: "" });
+      toast.success(res.message || "Password updated successfully!");
+      setTimeout(() => setSaved(false), 3000);
+    } else {
+      toast.error(res.message || "Failed to change password.");
+    }
+
+    setSaving(false);
+  };
+
+  const s = strength();
 
   return (
     <div>
@@ -40,153 +64,125 @@ export default function SettingsPage() {
         <p className="text-slate-600">Manage your account preferences and security</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Notifications */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-              <Bell size={20} className="text-indigo-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Notifications</h3>
-              <p className="text-sm text-slate-600">Manage how you receive updates</p>
-            </div>
-          </div>
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden max-w-lg">
 
-          <div className="space-y-2">
-            <SettingToggle
-              title="Email Notifications"
-              description="Receive updates via email"
-              enabled={notifications.email}
-              onChange={(val) => setNotifications({...notifications, email: val})}
-            />
-            <SettingToggle
-              title="Push Notifications"
-              description="Get push notifications on your device"
-              enabled={notifications.push}
-              onChange={(val) => setNotifications({...notifications, push: val})}
-            />
-            <SettingToggle
-              title="SMS Notifications"
-              description="Receive important alerts via SMS"
-              enabled={notifications.sms}
-              onChange={(val) => setNotifications({...notifications, sms: val})}
-            />
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+          <div className="w-9 h-9 bg-violet-50 rounded-xl flex items-center justify-center">
+            <Key size={18} className="text-violet-600" />
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-900">Change Password</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Use a strong, unique password</p>
           </div>
         </div>
 
-        {/* Security */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Shield size={20} className="text-purple-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Security</h3>
-              <p className="text-sm text-slate-600">Keep your account secure</p>
+        <div className="px-6 py-5 space-y-4">
+
+          {/* Current Password */}
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+              Current Password
+            </label>
+            <div className="relative">
+              <input
+                type={showCurrent ? "text" : "password"}
+                value={passwords.current}
+                onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                placeholder="Enter current password"
+                className="w-full px-4 py-2.5 pr-10 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-slate-50"
+              />
+              <button onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <SettingToggle
-              title="Two-Factor Authentication"
-              description="Add an extra layer of security"
-              enabled={twoFactor}
-              onChange={setTwoFactor}
-            />
-            
-            <div className="py-4 border-b border-slate-200">
-              <h4 className="font-semibold text-slate-900 mb-3">Change Password</h4>
-              <div className="space-y-3">
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Current password"
-                    className="w-full px-4 py-2 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <button
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+          {/* New Password */}
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+              New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showNew ? "text" : "password"}
+                value={passwords.newPass}
+                onChange={(e) => setPasswords({ ...passwords, newPass: e.target.value })}
+                placeholder="Enter new password"
+                className="w-full px-4 py-2.5 pr-10 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-slate-50"
+              />
+              <button onClick={() => setShowNew(!showNew)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+
+            {/* Strength Bar */}
+            {passwords.newPass && (
+              <div className="mt-2">
+                <div className="flex gap-1 mb-1">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= s ? strengthColor[s] : "bg-slate-200"}`} />
+                  ))}
                 </div>
-                <input
-                  type="password"
-                  placeholder="New password"
-                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <button className="w-full py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
-                  Update Password
-                </button>
+                <p className={`text-xs font-semibold ${strengthText[s]}`}>{strengthLabel[s]}</p>
               </div>
-            </div>
+            )}
           </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+              Confirm New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showConfirm ? "text" : "password"}
+                value={passwords.confirm}
+                onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                placeholder="Confirm new password"
+                className={`w-full px-4 py-2.5 pr-10 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-slate-50 ${
+                  passwords.confirm && passwords.newPass !== passwords.confirm
+                    ? "border-red-300 focus:ring-red-300"
+                    : "border-slate-200"
+                }`}
+              />
+              <button onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {passwords.confirm && passwords.newPass !== passwords.confirm && (
+              <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+            )}
+          </div>
+
+          {/* Update Button */}
+          <button
+            onClick={handleSave}
+            disabled={
+              saving ||
+              !passwords.current ||
+              !passwords.newPass ||
+              passwords.newPass !== passwords.confirm
+            }
+            className={`w-full py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
+              saved
+                ? "bg-emerald-500 text-white"
+                : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+            }`}
+          >
+            {saved ? (
+              <><Check size={16} /> Password Updated</>
+            ) : saving ? (
+              <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Updating...</>
+            ) : (
+              "Update Password"
+            )}
+          </button>
+
         </div>
-
-        {/* Appearance */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              {darkMode ? <Moon size={20} className="text-orange-600" /> : <Sun size={20} className="text-orange-600" />}
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Appearance</h3>
-              <p className="text-sm text-slate-600">Customize your interface</p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <SettingToggle
-              title="Dark Mode"
-              description="Switch to dark theme"
-              enabled={darkMode}
-              onChange={setDarkMode}
-            />
-          </div>
-        </div>
-
-        {/* Language & Region */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <Globe size={20} className="text-green-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Language & Region</h3>
-              <p className="text-sm text-slate-600">Set your preferences</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-slate-700 block mb-2">Language</label>
-              <select className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option>English (US)</option>
-                <option>Spanish</option>
-                <option>French</option>
-                <option>German</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium text-slate-700 block mb-2">Timezone</label>
-              <select className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option>Pacific Time (PT)</option>
-                <option>Eastern Time (ET)</option>
-                <option>Central Time (CT)</option>
-                <option>Mountain Time (MT)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Save Button */}
-      <div className="mt-8 flex justify-end">
-        <button className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition">
-          Save All Changes
-        </button>
       </div>
     </div>
   );

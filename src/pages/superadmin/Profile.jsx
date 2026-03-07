@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function Profile() {
-  const { user, getUserById, uploadProfilePicture } = useAuth();
+  const { user, getUserById, uploadProfilePicture, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -88,6 +88,20 @@ export default function Profile() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleSave = async () => {
+    const res = await updateProfile(user?.userId, {
+      FirstName: profile.firstName,
+      LastName: profile.lastName,
+      PhoneNumber: profile.phone,
+    });
+
+    if (res.success) {
+      toast.success("Profile updated successfully!");
+      setIsEditing(false);
+    } else {
+      toast.error(res.message || "Failed to update profile.");
+    }
+  };
   const getFullName = () => `${profile.firstName} ${profile.lastName}`.trim() || "—";
   const getInitials = () => {
     const f = profile.firstName?.[0] ?? "";
@@ -114,7 +128,7 @@ export default function Profile() {
           <p className="text-slate-600">Manage your account information</p>
         </div>
         <button
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={() => isEditing ? handleSave() : setIsEditing(true)}
           className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition"
         >
           {isEditing ? <Save size={20} /> : <Edit2 size={20} />}
