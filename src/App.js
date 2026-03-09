@@ -38,6 +38,7 @@ import Attendance from "./pages/hr/Attendance";
 import Payroll from "./pages/hr/Payroll";
 import Analytics from "./pages/hr/Analytics";
 import ResetPassword from "./pages/auth/ResetPassword";
+import CreatePlan from "./pages/superadmin/CreatePlan";
 
 // ═══════════════════════════════════════════════════
 // ICON MAP
@@ -444,6 +445,7 @@ export default function App() {
           <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
             <Route index element={<RoleBasedRedirect />} />
             <Route path="superadmin/dashboard" element={<SuperAdminDashboard />} />
+            <Route path="superadmin/plans/create" element={<CreatePlan />} />
             <Route path="profile" element={<Profile />} />
             <Route path="employees" element={<Employees />} />
             <Route path="attendance" element={<Attendance />} />
