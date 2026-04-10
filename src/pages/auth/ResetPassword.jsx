@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-
-const API_BASE_URL = "https://localhost:7271/api/LoginResistarion";
+import API_BASE_URL from "../../context/Apiconfig"; // ← single source of truth
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();

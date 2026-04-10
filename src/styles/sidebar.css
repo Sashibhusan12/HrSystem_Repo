@@ -705,11 +705,14 @@ body.light-mode .top-navbar {
 body.light-mode .app-main {
   background: var(--navy-surface);
 }
-body.light-mode .content-card {
+/* body.light-mode .content-card {
   background: var(--navy-card);
   border-color: var(--navy-border);
+} */
+body.light-mode .content-card {
+    background: #1a1610;
+    border-color: var(--navy-border);
 }
-
 /* ════════════════════════════════════════════════
    MOBILE  (≤ 768px)
 ════════════════════════════════════════════════ */

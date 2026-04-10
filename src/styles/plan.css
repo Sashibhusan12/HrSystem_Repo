@@ -1,0 +1,255 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   ADD THESE RULES to your existing createplan.css
+   (keep all your current styles and paste these below them)
+───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Toast ─────────────────────────────────────────────────────────────────── */
+.cp-toast {
+  position: fixed; top: 20px; right: 20px; z-index: 9999;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  animation: cp-toast-in 0.25s ease; max-width: 360px;
+}
+.cp-toast--success { background: #0f2a1a; border: 1px solid rgba(52,211,153,0.4); color: #34d399; }
+.cp-toast--error   { background: #2a0f0f; border: 1px solid rgba(239,68,68,0.4);  color: #f87171; }
+.cp-toast-close {
+  margin-left: auto; background: none; border: none; cursor: pointer;
+  color: inherit; opacity: 0.6; padding: 2px; display: flex; align-items: center;
+}
+.cp-toast-close:hover { opacity: 1; }
+@keyframes cp-toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Error banner ──────────────────────────────────────────────────────────── */
+.cp-error-banner {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171; border-radius: 8px; padding: 10px 14px;
+  font-size: 13px; margin-bottom: 20px;
+}
+.cp-error-text { flex: 1; }
+.cp-retry-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171; border-radius: 6px; padding: 4px 10px;
+  font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap;
+  transition: background 0.2s;
+}
+.cp-retry-btn:hover { background: rgba(239,68,68,0.22); }
+
+/* ── Input error state ─────────────────────────────────────────────────────── */
+.cp-input--error { border-color: rgba(239,68,68,0.5) !important; background: rgba(239,68,68,0.04) !important; }
+
+/* ── Spinner ───────────────────────────────────────────────────────────────── */
+.cp-spinner { animation: cp-spin 0.75s linear infinite; }
+.cp-spinner-gold { color: var(--gold, #c9a84c); }
+@keyframes cp-spin { to { transform: rotate(360deg); } }
+
+/* ── Form top row (title + cancel edit btn) ────────────────────────────────── */
+.cp-form-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; margin-bottom: 8px;
+}
+.cp-cancel-edit {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
+  color: #f87171; border-radius: 7px; padding: 6px 12px;
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+  white-space: nowrap; margin-top: 2px;
+}
+.cp-cancel-edit:hover { background: rgba(239,68,68,0.16); }
+
+/* Edit mode button variant */
+.cp-btn.editing { background: var(--gold, #c9a84c) !important; }
+
+/* ── Loading button ────────────────────────────────────────────────────────── */
+.cp-btn.loading { opacity: 0.75; cursor: not-allowed; pointer-events: none; }
+
+/* ── Overlay (delete modal backdrop) ──────────────────────────────────────── */
+.cp-overlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+
+  display: flex;
+  align-items: center;   /* vertical center */
+  justify-content: center; /* horizontal center */
+
+  z-index: 9999;
+}
+
+@keyframes cp-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Delete modal ──────────────────────────────────────────────────────────── */
+.cp-modal {
+  background: #fff; border-radius: 16px; padding: 32px 28px;
+  max-width: 380px; width: 90%; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: cp-modal-in 0.3s cubic-bezier(0.22,1,0.36,1);
+  position: relative;
+  margin-bottom: 654px;
+}
+@keyframes cp-modal-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.cp-modal-icon {
+  width: 50px; height: 50px; margin: 0 auto 16px;
+  background: rgba(239,68,68,0.08); border: 1.5px solid rgba(239,68,68,0.25);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  color: #ef4444;
+}
+.cp-modal-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #1a1a1a; }
+.cp-modal-desc  { font-size: 13px; color: #6b7280; line-height: 1.7; margin-bottom: 24px; }
+.cp-modal-desc strong { color: #1a1a1a; }
+.cp-modal-actions { display: flex; gap: 10px; justify-content: center; }
+.cp-modal-cancel {
+  padding: 10px 20px; border-radius: 8px; border: 1.5px solid #e5e7eb;
+  background: transparent; color: #6b7280; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.cp-modal-cancel:hover { border-color: #9ca3af; color: #374151; }
+.cp-modal-confirm {
+  padding: 10px 20px; border-radius: 8px; border: none;
+  background: #ef4444; color: #fff; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+}
+.cp-modal-confirm:hover { background: #dc2626; }
+.cp-modal-confirm:disabled, .cp-modal-cancel:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Plans list section ────────────────────────────────────────────────────── */
+.cp-list-section { margin-top: 40px; }
+.cp-list-header {
+  display: flex; align-items: flex-end;
+  justify-content: space-between; margin-bottom: 16px;
+}
+.cp-list-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-top: 4px; }
+.cp-list-meta  { display: flex; align-items: center; gap: 10px; }
+.cp-list-count {
+  font-size: 12px; font-weight: 500; padding: 4px 10px;
+  border-radius: 20px; background: var(--gold-soft, rgba(201,168,76,0.12));
+  color: var(--gold, #c9a84c); border: 1px solid rgba(201,168,76,0.25);
+}
+.cp-refresh-btn {
+  width: 32px; height: 32px; border-radius: 8px; display: flex;
+  align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.04); border: 1px solid #e5e7eb;
+  color: #6b7280; cursor: pointer; transition: all 0.2s;
+}
+.cp-refresh-btn:hover { color: #1a1a1a; background: rgba(0,0,0,0.08); }
+
+/* ── Stats strip ───────────────────────────────────────────────────────────── */
+.cp-stats-strip {
+  display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.cp-stat {
+  display: flex; align-items: center; gap: 8px;
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+  padding: 10px 16px; flex: 1; min-width: 100px;
+}
+.cp-stat-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--gold-soft, rgba(201,168,76,0.12));
+  color: var(--gold, #c9a84c);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.cp-stat-val   { font-size: 18px; font-weight: 700; color: #1a1a1a; line-height: 1; }
+.cp-stat-label { font-size: 11px; color: #9ca3af; margin-left: 2px; }
+
+/* ── Table card ────────────────────────────────────────────────────────────── */
+.cp-table-card {
+  background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+  overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.cp-table { width: 100%; border-collapse: collapse; }
+.cp-table thead tr { background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+.cp-table th {
+  text-align: left; padding: 12px 18px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #9ca3af;
+}
+.cp-tr { border-bottom: 1px solid #f3f4f6; transition: background 0.15s; }
+.cp-tr:last-child { border-bottom: none; }
+.cp-tr:hover { background: #fafafa; }
+.cp-tr--active { background: rgba(201,168,76,0.06) !important; }
+.cp-table td { padding: 14px 18px; font-size: 14px; color: #1a1a1a; }
+.cp-td-num { color: #9ca3af; font-size: 12px; width: 40px; }
+.cp-td-name {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 600; color: #1a1a1a;
+}
+.cp-editing-badge {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+  background: var(--gold-soft, rgba(201,168,76,0.15));
+  color: var(--gold, #c9a84c); border: 1px solid rgba(201,168,76,0.3);
+  letter-spacing: 0.05em; text-transform: uppercase;
+}
+.cp-td-price { font-weight: 700; font-size: 15px; }
+
+/* ── Chips ─────────────────────────────────────────────────────────────────── */
+.cp-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 500;
+}
+.cp-chip--limit {
+  background: rgba(201,168,76,0.1); color: #a37c20;
+  border: 1px solid rgba(201,168,76,0.25);
+}
+.cp-chip--unlimited {
+  background: rgba(34,197,94,0.08); color: #16a34a;
+  border: 1px solid rgba(34,197,94,0.2);
+}
+
+/* ── Table action buttons ──────────────────────────────────────────────────── */
+.cp-td-actions { display: flex; gap: 8px; }
+.cp-action-btn {
+  width: 30px; height: 30px; border-radius: 7px; border: 1px solid transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; background: none;
+}
+.cp-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.cp-action-btn--edit {
+  color: var(--gold, #c9a84c); border-color: rgba(201,168,76,0.3);
+  background: rgba(201,168,76,0.1);
+}
+.cp-action-btn--edit:hover:not(:disabled) { background: var(--gold, #c9a84c); color: #fff; }
+.cp-action-btn--delete {
+  color: #ef4444; border-color: rgba(239,68,68,0.25);
+  background: rgba(239,68,68,0.06);
+}
+.cp-action-btn--delete:hover:not(:disabled) { background: #ef4444; color: #fff; }
+
+/* ── Table center states ───────────────────────────────────────────────────── */
+.cp-table-center {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 56px 24px; gap: 12px;
+  color: #9ca3af; font-size: 14px; text-align: center;
+}
+.cp-mt { margin-top: 8px; }
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .cp-stats-strip { flex-direction: column; }
+  .cp-table th:nth-child(4), .cp-table td:nth-child(4) { display: none; }
+  .cp-list-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+.cp-modal{
+  animation: modalPop .25s ease;
+}
+
+@keyframes modalPop{
+  from{
+    transform: scale(.9);
+    opacity:0;
+  }
+  to{
+    transform: scale(1);
+    opacity:1;
+  }
+}

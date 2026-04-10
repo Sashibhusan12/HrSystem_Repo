@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
-
-const API_BASE_URL = "https://localhost:7271/api";
+import API_BASE_URL from "../context/Apiconfig"; // ← single source of truth
 
 const ApiService = createContext();
 export const useAuth = () => useContext(ApiService);
@@ -56,13 +55,14 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     clearSession();
-    window.location.href = "/login"; // redirect to login page
+    window.location.href = "/login";
   };
 
-  // Keep ref in sync so the interceptor always calls the latest logout
   useEffect(() => {
     logoutRef.current = logout;
   }, [logout]);
+
+  // ── AUTH ───────────────────────────────────────────────────────────────────
 
   const login = async (email, password) => {
     try {
@@ -177,8 +177,90 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // ── PLAN SERVICES ──────────────────────────────────────────────────────────
+
+  const createPlan = async (planName, price, employeeLimit) => {
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.post(
+        `${API_BASE_URL}/Plan/create-plan`,
+        {
+          planName,
+          price: parseFloat(price),
+          employeeLimit: employeeLimit !== "" && employeeLimit != null
+            ? parseInt(employeeLimit, 10)
+            : null,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return { success: true, data };
+    } catch (err) {
+      return {
+        success: false,
+        message:
+          err.response?.data?.message ??
+          err.response?.data?.title ??
+          "Failed to create plan. Please try again.",
+      };
+    }
+  };
+
+  const getPlans = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.get(
+        `${API_BASE_URL}/Plan/get-plans`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message ?? "Failed to fetch plans." };
+    }
+  };
+
+  const updatePlan = async (id, planName, price, employeeLimit) => {
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.put(
+        `${API_BASE_URL}/Plan/update-plan/${id}`,
+        {
+          planName,
+          price: parseFloat(price),
+          employeeLimit: employeeLimit !== "" && employeeLimit != null
+            ? parseInt(employeeLimit, 10)
+            : null,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message ?? "Failed to update plan." };
+    }
+  };
+
+  const deletePlan = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.delete(
+        `${API_BASE_URL}/Plan/delete-plan/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return { success: true, data };
+    } catch (err) {
+      return { success: false, message: err.response?.data?.message ?? "Failed to delete plan." };
+    }
+  };
+
+  // ──────────────────────────────────────────────────────────────────────────
+
   return (
-    <ApiService.Provider value={{ user, login, logout, sendOtp, verifyOtp, sendResetLink, getUserById, uploadProfilePicture, updateProfile, changePassword }}>
+    <ApiService.Provider
+      value={{
+        user, login, logout, sendOtp, verifyOtp, sendResetLink,
+        getUserById, uploadProfilePicture, updateProfile, changePassword,
+        createPlan, getPlans, updatePlan, deletePlan,
+      }}
+    >
       {children}
     </ApiService.Provider>
   );
@@ -205,7 +287,6 @@ export const useMenus = () => {
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         });
 
-        // ── Auto-logout if token is invalid/expired ──────────────────────────
         if (res.status === 401 || res.status === 403) {
           ["user", "token", "tenantId", "role"].forEach((k) => localStorage.removeItem(k));
           window.location.href = "/";
