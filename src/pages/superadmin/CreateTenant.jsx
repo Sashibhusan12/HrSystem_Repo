@@ -13,7 +13,7 @@ const styles = `
     justify-content: center;
    
 }
-  .ct-page { width: 100%; max-width: 620px; }
+  .ct-page { width: 100%; }
 
   .ct-badge {
     display: inline-flex;
@@ -63,6 +63,7 @@ const styles = `
     padding: 36px;
     position: relative;
     overflow: hidden;
+    width: 1000px;
   }
 
   .ct-card::before {
